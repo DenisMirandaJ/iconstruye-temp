@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Viewer</title>
+</head>
+<body>
+    <h1>Select HTML Snippet:</h1>
+    <select id="rowSelect">
+        <!-- Options will be populated dynamically -->
+    </select>
+    <!-- Select entre Agilice y Redmat -->
+    <select id="select">
+        <option value="Agilice">Agilice</option>
+        <option value="Redmat">Redmat</option>
+    </select>
+    <button onclick="renderHTML()">Render HTML</button>
+    <button onclick="nextRow()">Next</button>
+    <div id="htmlSnippet"></div>
+
+    <script>
+        // Function to fetch data from Excel file
+        function fetchData() {
+            fetch('minified_html_output.xlsx')
+                .then(response => response.blob())
+                .then(blob => {
+                    const reader = new FileReader();
+                    reader.onload = function() {
+                        const data = new Uint8Array(reader.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const sheetName = workbook.SheetNames[0];
+                        const sheet = workbook.Sheets[sheetName];
+                        const range = XLSX.utils.decode_range(sheet['!ref']);
+                        const options = document.getElementById('rowSelect');
+                        for (let i = range.s.r + 1; i <= range.e.r; i++) {
+                            const option = document.createElement('option');
+                            idmail = sheet['A' + i].v + "-" + sheet['K' + i].v
+                            option.value = i;
+                            option.textContent = idmail;
+                            options.appendChild(option);
+                        }
+                    };
+                    reader.readAsArrayBuffer(blob);
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        // Function to render HTML snippet
+        function renderHTML() {
+            const selectedRow = document.getElementById('rowSelect').value;
+            fetch('minified_html_output.xlsx')
+                .then(response => response.blob())
+                .then(blob => {
+                    const reader = new FileReader();
+                    reader.onload = function() {
+                        const data = new Uint8Array(reader.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const sheetName = workbook.SheetNames[0];
+                        const sheet = workbook.Sheets[sheetName];
+                        // I para Agilice, J para Redmat
+                        if (document.getElementById('select').value == "Agilice") {
+                            const htmlSnippet = sheet['Q' + selectedRow].v;
+                            document.getElementById('htmlSnippet').innerHTML = htmlSnippet;
+                        } else {
+                            const htmlSnippet = sheet['R' + selectedRow].v;
+                            document.getElementById('htmlSnippet').innerHTML = htmlSnippet;
+                        }
+                        // const htmlSnippet = sheet['I' + selectedRow].v;
+                        // document.getElementById('htmlSnippet').innerHTML = htmlSnippet;
+                    };
+                    reader.readAsArrayBuffer(blob);
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function nextRow() {
+            const rowSelect = document.getElementById('rowSelect');
+            if (selectedRow < rowSelect.options.length - 1) {
+                rowSelect.selectedIndex = parseInt(selectedRow) + 1;
+                fetchHTML();
+            } else {
+                alert('No more rows available.');
+            }
+        }
+
+        // Load data when the page is loaded
+        window.onload = function() {
+            fetchData();
+        };
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
+</body>
+</html>
