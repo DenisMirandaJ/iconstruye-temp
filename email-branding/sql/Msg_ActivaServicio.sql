@@ -1,4 +1,11 @@
-CREATE PROCEDURE [dbo].[Msg_ActivaServicio]
+USE [ColaboracionMensajeria2]
+GO
+/****** Object:  StoredProcedure [dbo].[Msg_ActivaServicio]    Script Date: 3/8/2024 8:00:03 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[Msg_ActivaServicio]
     @idempresa  INT,
     @idorgc     INT,
     @iddoc      INT,
@@ -6,47 +13,6 @@ CREATE PROCEDURE [dbo].[Msg_ActivaServicio]
     @idtipomail INT
 AS
     BEGIN
-
-        -- Flujo alterno para clientes con mail diferenciados
-        DECLARE @IdTipoMailDiferenciado INT;
-        DECLARE @IdSitioOrigen INT;
-        DECLARE @GrupoMail INT;
-
-        SET @IdTipoMailDiferenciado = @idtipomail;
-
-        BEGIN TRY
-            -- Obtener el sitio origen de la empresa
-            SELECT @IdSitioOrigen = IdSitioOrigen
-            FROM dbMarketPlace.dbo.EMPRESAS
-            WHERE idempresa = @idempresa;
-
-            IF @IdSitioOrigen IS NULL
-            BEGIN
-                SELECT @IdSitioOrigen = 1; -- ASUMIMOS ICONSTRUYE
-            END;
-
-            IF @IdSitioOrigen != 1
-            BEGIN
-                -- Obtener el grupo mail del correo
-                SELECT @GrupoMail = GRUPOMAIL
-                FROM dbMarketPlace.dbo.MAIL
-                WHERE IDMAIL = @idtipomail;
-
-                -- Obtener el mail diferenciado
-                SELECT @IdTipoMailDiferenciado = IDMAIL
-                FROM dbMarketPlace.dbo.MAIL
-                WHERE GRUPOMAIL = @GrupoMail AND SITIOORIGEN = @IdSitioOrigen;
-            END
-            ELSE
-            BEGIN
-                SELECT @IdTipoMailDiferenciado = @idtipomail;
-            END;
-        END TRY
-        BEGIN CATCH
-            SELECT @IdTipoMailDiferenciado = @idtipomail;
-        END CATCH;
-
-        
 
         DECLARE @Mensaje XML;
 
@@ -67,7 +33,7 @@ AS
                 [idtipomail],
                 [idLinea]
             )
-        VALUES ( @idempresa, @idorgc, @iddoc, @IdTipoMailDiferenciado, @idLinea );
+        VALUES ( @idempresa, @idorgc, @iddoc, @idtipomail, @idLinea );
 
 
 
@@ -379,7 +345,7 @@ end
 
                 RETURN;
 
-       END;
+            END;
 
 
 
