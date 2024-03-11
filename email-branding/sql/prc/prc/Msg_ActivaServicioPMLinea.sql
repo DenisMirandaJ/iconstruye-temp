@@ -1,6 +1,6 @@
 USE [ColaboracionMensajeria2]
 GO
-/****** Object:  StoredProcedure [dbo].[Msg_ActivaServicioPMLinea]    Script Date: 3/11/2024 9:46:47 AM ******/
+/****** Object:  StoredProcedure [dbo].[Msg_ActivaServicioPMLinea]    Script Date: 3/11/2024 12:14:26 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -23,13 +23,11 @@ AS
 BEGIN 
 
 DECLARE @IdTipoMailDiferenciado INT;
-SET @IdTipoMailDiferenciado = @IdTipoMail;
-BEGIN TRY  
-	SET @IdTipoMailDiferenciado = dbo.Get_Mail_Diferenciado(@IdEmpresa, @IdTipoMail);
-END TRY  
-BEGIN CATCH  
-	SET @IdTipoMailDiferenciado = @IdTipoMail;
-END CATCH
+EXEC dbo.Get_Mail_Diferenciado @IdEmpresa, @IdTipoMail, @IdTipoMailDiferenciado OUTPUT;
+IF @IdTipoMailDiferenciado IS NULL
+BEGIN
+	SET @IdTipoMailDiferenciado = @IdTipoMail; 
+END
 
 DECLARE @Mensaje XML 
 

@@ -1,6 +1,6 @@
 USE [ColaboracionMensajeria2]
 GO
-/****** Object:  StoredProcedure [dbo].[Msg_ActivaServicio]    Script Date: 3/11/2024 12:03:20 PM ******/
+/****** Object:  StoredProcedure [dbo].[Msg_ActivaServicio]    Script Date: 3/11/2024 12:07:18 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON

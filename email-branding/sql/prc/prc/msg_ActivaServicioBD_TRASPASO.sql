@@ -1,29 +1,25 @@
 USE [ColaboracionMensajeria2]
 GO
-/****** Object:  StoredProcedure [dbo].[msg_ActivaServicioCreacionBodegaSistema]    Script Date: 3/11/2024 9:44:08 AM ******/
+/****** Object:  StoredProcedure [dbo].[msg_ActivaServicioBD_TRASPASO]    Script Date: 3/11/2024 12:08:00 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
--- 5
-
-ALTER procedure [dbo].[msg_ActivaServicioCreacionBodegaSistema]
+ALTER procedure [dbo].[msg_ActivaServicioBD_TRASPASO]
 @IdEmpresa int,
 @IdOrgc int,
-@IdBodega int,
+@IdDoc int,
 @IdUsuarioDes varchar(30),
 @IdTipoMail int
 AS 
 BEGIN 
 
 DECLARE @IdTipoMailDiferenciado INT;
-SET @IdTipoMailDiferenciado = @IdTipoMail;
-BEGIN TRY  
-	SET @IdTipoMailDiferenciado = dbo.Get_Mail_Diferenciado(@IdEmpresa, @IdTipoMail);
-END TRY  
-BEGIN CATCH  
-	SET @IdTipoMailDiferenciado = @IdTipoMail;
-END CATCH
+EXEC dbo.Get_Mail_Diferenciado @IdEmpresa, @IdTipoMail, @IdTipoMailDiferenciado OUTPUT;
+IF @IdTipoMailDiferenciado IS NULL
+BEGIN
+	SET @IdTipoMailDiferenciado = @IdTipoMail; 
+END
 
 DECLARE @Mensaje XML 
 
@@ -31,7 +27,7 @@ declare @XMLMensaje table
 (
 [IdEmpresa] int, 
 [IdOrgc] INT, 
-[IdBodega] int, 
+[IdDoc] int, 
 [IdUsuarioDes] varchar(30),
 [IdTipoMail] int
 )
@@ -40,14 +36,14 @@ INSERT INTO @XMLMensaje
 ( 
 [IdEmpresa] , 
 [IdOrgc] , 
-[IdBodega] , 
+[IdDoc] , 
 [IdUsuarioDes] ,
 [IdTipoMail] 
 ) 
 VALUES ( 
 @IdEmpresa ,
 @IdOrgc ,
-@IdBodega ,
+@IdDoc ,
 @IdUsuarioDes ,
 @IdTipoMailDiferenciado
 ) 
@@ -61,8 +57,8 @@ select @Mensaje
 
 DECLARE @Handle UNIQUEIDENTIFIER ; 
 begin
-	BEGIN DIALOG CONVERSATION @Handle FROM SERVICE [BodegaCreacionBodegaSistemaServ] TO 
-	SERVICE 'BodegaCreacionBodegaSistemaServ' ON CONTRACT [Contrato_Msg] WITH ENCRYPTION = OFF ; 
+	BEGIN DIALOG CONVERSATION @Handle FROM SERVICE BD_TRASPASOServ TO 
+	SERVICE 'BD_TRASPASOServ' ON CONTRACT [Contrato_Msg] WITH ENCRYPTION = OFF ; 
 	SEND ON CONVERSATION @Handle MESSAGE TYPE MsgIC (@Mensaje) ; 
 	return 
 end
